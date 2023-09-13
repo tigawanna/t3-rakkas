@@ -24,8 +24,8 @@ const attachSession = async (ctx: RequestContext) => {
 };
 const logger = async (ctx: RequestContext) => {
   try {
-    console.log("request context headers == ", ctx.request.headers);
-  } catch (error) {
+    console.log("========", ctx.ip,"=============");
+ } catch (error) {
     throw new Error("Failed to attach session");
   }
 };
@@ -77,19 +77,19 @@ export default createRequestHandler({
         return app;
       },
 
-      wrapSsrStream(stream) {
-        const { readable, writable } = new TransformStream({
-          transform(chunk, controller) {
-            // You can transform the chunks of the
-            // React SSR stream here.
-            controller.enqueue(chunk);
-          },
-        });
-        // @ts-expect-error
-        stream.pipeThrough(writable);
+      // wrapSsrStream(stream) {
+      //   const { readable, writable } = new TransformStream({
+      //     transform(chunk, controller) {
+      //       // You can transform the chunks of the
+      //       // React SSR stream here.
+      //       controller.enqueue(chunk);
+      //     },
+      //   });
+      //   // @ts-expect-error
+      //   stream.pipeThrough(writable);
 
-        return readable;
-      },
+      //   return readable;
+      // },
     };
   },
 });

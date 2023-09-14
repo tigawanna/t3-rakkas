@@ -14,6 +14,9 @@ declare module "rakkasjs" {
   }
 }
 
+type CreateRequestHandlerParams = Parameters<typeof createRequestHandler>
+
+
 const attachSession = async (ctx: RequestContext) => {
   try {
     // ctx.locals.session = await getSession(
@@ -36,6 +39,8 @@ const logger = async (ctx: RequestContext) => {
   }
 };
 
+
+
 export default createRequestHandler({
   middleware: {
     // HatTip middleware to be injected
@@ -45,57 +50,57 @@ export default createRequestHandler({
     // HatTip middleware to be injected
     // after the page routes handler but
     // before the API routes handler
-    beforeApiRoutes: [
-        logger,
-    ],
+    beforeApiRoutes: [logger],
     // HatTip middleware to be injected
     // after the API routes handler but
     // before the 404 handler
     beforeNotFound: [],
   },
 
-  createPageHooks(requestContext) {
+  createPageHooks() {
+    let queries = Object.create(null);
+
     return {
-      emitBeforeSsrChunk() {
-        // Return a string to emit into React's
-        // SSR stream just before React emits a
-        // chunk of the page.
-        return "";
+      wrapApp(app) {
+        const queryCache = new QueryCache({
+          onSuccess(data, query) {
+            // Store newly fetched data
+            queries[query.queryHash] = data;
+          },
+        });
+
+        const queryClient = new QueryClient({
+          queryCache,
+          defaultOptions: {
+            queries: {
+              suspense: true,
+              staleTime: Infinity,
+              refetchOnWindowFocus: false,
+              refetchOnReconnect: false,
+            },
+          },
+        });
+
+        return (
+          <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+        );
       },
 
       emitToDocumentHead() {
-        // Return a string to emit some HTML into the
-        // document's head.
-        return "";
+        return `<script>$TQD=Object.create(null);$TQS=data=>Object.assign($TQD,data);</script>`;
       },
 
-      extendPageContext(pageContext) {
-        // Add properties to the page context,
-        // especially to pageContext.locals.
-        // Extensions added here will only be
-        // available on the server-side.
+      emitBeforeSsrChunk() {
+        if (Object.keys(queries).length === 0) return "";
+
+        // Emit a script that calls the global $TQS function with the
+        // newly fetched query data.
+
+        const queriesString = uneval(queries);
+        queries = Object.create(null);
+        return `<script>$TQS(${queriesString})</script>`;
       },
-
-      wrapApp(app) {
-        // Wrap the Rakkas application in some provider
-        // component (only on the server).
-        // return <SomeProvider>{ app } < /SomeProvider>;
-        return app;
-      },
-
-      // wrapSsrStream(stream) {
-      //   const { readable, writable } = new TransformStream({
-      //     transform(chunk, controller) {
-      //       // You can transform the chunks of the
-      //       // React SSR stream here.
-      //       controller.enqueue(chunk);
-      //     },
-      //   });
-      //   // @ts-expect-error
-      //   stream.pipeThrough(writable);
-
-      //   return readable;
-      // },
     };
   },
 });
+

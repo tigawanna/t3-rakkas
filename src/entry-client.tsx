@@ -1,6 +1,9 @@
 /* eslint-disable no-var */
 import { startClient } from "rakkasjs";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { trpc } from "./utils/trpc";
+import { trpcClient } from "./utils/client";
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,7 +38,9 @@ startClient({
   hooks: {
     wrapApp(app) {
       return (
-        <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+            <trpc.Provider client={trpcClient} queryClient={queryClient}>
+              <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+            </trpc.Provider>
       );
     },
   },

@@ -7,6 +7,8 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { uneval } from "devalue";
+import { trpc } from "./utils/trpc";
+import { trpcClient } from "./utils/client";
 
 declare module "rakkasjs" {
   interface ServerSideLocals {
@@ -38,7 +40,6 @@ const logger = async (ctx: RequestContext) => {
     throw new Error("Failed to attach session");
   }
 };
-
 
 
 export default createRequestHandler({
@@ -82,7 +83,10 @@ export default createRequestHandler({
         });
 
         return (
-          <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+                   <trpc.Provider client={trpcClient} queryClient={queryClient}>
+                     <QueryClientProvider client={queryClient}>{app}</QueryClientProvider>
+                   </trpc.Provider>
+
         );
       },
 

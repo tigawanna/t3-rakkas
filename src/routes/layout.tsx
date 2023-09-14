@@ -31,10 +31,11 @@ const MainLayout: Layout = ({ children }) => (
             </StyledLink>
           </li>
           <li>
-            <StyledLink href="/todo" activeClass={css.activeLink}>
-              Todo
+            <StyledLink href="/users" activeClass={css.activeLink}>
+              User
             </StyledLink>
           </li>
+   
         </ul>
       </nav>
     </header>

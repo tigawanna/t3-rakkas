@@ -1,6 +1,12 @@
 import { RequestContext, createRequestHandler } from "rakkasjs";
 import { cookie } from "@hattip/cookie";
-import { cors } from "@hattip/cors";
+
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { uneval } from "devalue";
 
 declare module "rakkasjs" {
   interface ServerSideLocals {
